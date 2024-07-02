@@ -11,8 +11,8 @@ import {
 	Spacer,
 	Text,
 	VStack,
-} from "@chakra-ui/react";
-import React, { useState } from "react";
+} from '@chakra-ui/react';
+import React, { useState } from 'react';
 
 const SessionStartInputs = ({
 	length,
@@ -68,10 +68,38 @@ const SessionStartInputs = ({
 	);
 };
 
+const SessionQuestion = ({
+	tenses,
+	sessionId,
+	onQuestionChange,
+}: {
+	tenses: string[];
+	sessionId: string;
+	onQuestionChange: () => void;
+}) => {
+	// role: get a random question from the backend (/api/get-question)
+	// when the user submits an answer:
+	// 1. call onQuestionChange with the answer
+	// 2. tell the backend the user's answer (/api/submit-question)
+	// 3. get a new question
+	return <></>;
+};
+
+const SessionEnd = () => {
+	return (
+		<>
+			<Heading>Session Ended</Heading>
+			<Text>Good job!</Text>
+		</>
+	);
+};
+
 export const Session = () => {
-	const [currScreen, setCurrScreen] = useState("start");
+	const [currScreen, setCurrScreen] = useState('start');
 	const [length, setLength] = useState<number>();
 	const [tenses, setTenses] = useState<string[]>([]);
+	const [sessionStartTime, setSessionStartTime] = useState<number>();
+	const [sessionId, setSessionId] = useState<string>();
 	return (
 		<Box bg="blue.300" h="100%">
 			<Container
@@ -91,14 +119,41 @@ export const Session = () => {
 					flexDirection="column"
 					gap={4}
 				>
-					{currScreen === "start" ? (
+					{currScreen === 'start' ? (
 						<SessionStartInputs
 							length={length}
 							setLength={setLength}
 							tenses={tenses}
 							setTenses={setTenses}
-							onStart={() => setCurrScreen("session")}
+							onStart={async () => {
+								setCurrScreen('session');
+								setSessionStartTime(Date.now());
+								const res = await fetch('/api/start-session', {
+									method: 'POST',
+									body: JSON.stringify({
+										length,
+										tenses,
+									}),
+								});
+								const data = await res.json();
+								setSessionId(data.sessionId);
+							}}
 						/>
+					) : currScreen === 'session' ? (
+						<SessionQuestion
+							tenses={tenses}
+							sessionId={sessionId!}
+							onQuestionChange={() => {
+								if (
+									Date.now() - sessionStartTime! >
+									length! * 60 * 1000
+								) {
+									setCurrScreen('end');
+								}
+							}}
+						/>
+					) : currScreen === 'end' ? (
+						<SessionEnd />
 					) : (
 						<></>
 					)}
