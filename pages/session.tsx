@@ -1,3 +1,4 @@
+import { Tense } from '@/lib/types';
 import {
 	Box,
 	Button,
@@ -69,19 +70,56 @@ const SessionStartInputs = ({
 };
 
 const SessionQuestion = ({
-	tenses,
 	sessionId,
-	onQuestionChange,
+	sessionStartTime,
+	onSessionEnd,
 }: {
-	tenses: string[];
 	sessionId: string;
-	onQuestionChange: () => void;
+	sessionStartTime: number;
+	onSessionEnd: () => void;
 }) => {
 	// role: get a random question from the backend (/api/get-question)
 	// when the user submits an answer:
-	// 1. call onQuestionChange with the answer
-	// 2. tell the backend the user's answer (/api/submit-question)
+	// 1. tell the backend the user's answer (/api/submit-question)
+	// 2. check if the sessionCompleted field is true, if so, call onSessionEnd
 	// 3. get a new question
+	const getQuestion = async () => {
+		const res = await fetch('/api/get-question', {
+			method: 'POST',
+			body: JSON.stringify({
+				sessionId,
+			}),
+		});
+		const data = await res.json();
+		if ('error' in data) {
+			console.error('ERROR', data.error);
+			return;
+		}
+		if ('sessionCompleted' in data) {
+			onSessionEnd();
+			return;
+		}
+		console.log('RECV QUESTION', data);
+		return data;
+	};
+	const submitQuestion = async (
+		tenseData: Exclude<Exclude<Tense, 'id'>, 'tense'>
+	) => {
+		const res = await fetch('/api/submit-question', {
+			method: 'POST',
+			body: JSON.stringify({
+				sessionId,
+				tenseData,
+			}),
+		});
+		const data = await res.json();
+		if ('error' in data) {
+			console.error('ERROR', data.error);
+			return;
+		}
+		console.log('RECV SUBMIT', data);
+		return data;
+	};
 	return <></>;
 };
 
@@ -136,20 +174,16 @@ export const Session = () => {
 									}),
 								});
 								const data = await res.json();
+								console.log('RECV SESSION ID', data);
 								setSessionId(data.sessionId);
 							}}
 						/>
 					) : currScreen === 'session' ? (
 						<SessionQuestion
-							tenses={tenses}
 							sessionId={sessionId!}
-							onQuestionChange={() => {
-								if (
-									Date.now() - sessionStartTime! >
-									length! * 60 * 1000
-								) {
-									setCurrScreen('end');
-								}
+							sessionStartTime={sessionStartTime!}
+							onSessionEnd={() => {
+								setCurrScreen('end');
 							}}
 						/>
 					) : currScreen === 'end' ? (
