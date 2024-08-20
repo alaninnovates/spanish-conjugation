@@ -3,13 +3,31 @@ export interface Question {
 	englishName: string;
 	spanishName: string;
 	tenseData: {
-		[key: string]: Tense;
+		[key: string]: TenseData;
 	};
 }
 
-export interface Tense {
+type Mood =
+	| 'Indicativo'
+	| 'Subjuntivo'
+	| 'Imperativo Affirmativo'
+	| 'Imperativo Negativo';
+type Tense =
+	| 'Presente'
+	| 'Pretérito'
+	| 'Imperfecto'
+	| 'Futuro'
+	| 'Condicional'
+	| 'Presente Perfecto'
+	| 'Futuro Perfecto'
+	| 'Pluscamperfecto'
+	| 'Condicional perfecto';
+
+export interface TenseData {
 	id: number;
-	tense: string;
+	translation: string;
+	mood: Mood;
+	tense: Tense;
 	yo: string;
 	tu: string;
 	el: string;
@@ -40,7 +58,7 @@ export interface SessionLog {
 CREATE TABLE IF NOT EXISTS questions (
 	id SERIAL PRIMARY KEY,
 	englishName TEXT NOT NULL,
-	spanishName TEXT NOT NULL,
+	spanishName TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS tenses (
@@ -51,7 +69,7 @@ CREATE TABLE IF NOT EXISTS tenses (
 	el TEXT NOT NULL,
 	nosotros TEXT NOT NULL,
 	vosotros TEXT NOT NULL,
-	ellos TEXT NOT NULL,
+	ellos TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS sessions (
@@ -72,4 +90,7 @@ ALTER TABLE tenses ADD COLUMN tense TEXT;
 
 ALTER TABLE sessions ADD COLUMN length INTEGER;
 ALTER TABLE sessions ADD COLUMN tenses TEXT[];
+
+ALTER TABLE tenses ADD COLUMN mood TEXT;
+ALTER TABLE tenses ADD COLUMN translation TEXT;
 */
