@@ -3,16 +3,16 @@ export interface Question {
 	englishName: string;
 	spanishName: string;
 	tenseData: {
-		[key: string]: TenseData;
+		[key: string]: Tense;
 	};
 }
 
-type Mood =
+export type MoodOptions =
 	| 'Indicativo'
 	| 'Subjuntivo'
 	| 'Imperativo Affirmativo'
 	| 'Imperativo Negativo';
-type Tense =
+export type TenseOptions =
 	| 'Presente'
 	| 'Pretérito'
 	| 'Imperfecto'
@@ -23,11 +23,30 @@ type Tense =
 	| 'Pluscamperfecto'
 	| 'Condicional perfecto';
 
-export interface TenseData {
+export const moods: MoodOptions[] = [
+	'Indicativo',
+	'Subjuntivo',
+	'Imperativo Affirmativo',
+	'Imperativo Negativo',
+];
+
+export const tenses: TenseOptions[] = [
+	'Presente',
+	'Pretérito',
+	'Imperfecto',
+	'Futuro',
+	'Condicional',
+	'Presente Perfecto',
+	'Futuro Perfecto',
+	'Pluscamperfecto',
+	'Condicional perfecto',
+];
+
+export interface Tense {
 	id: number;
 	translation: string;
-	mood: Mood;
-	tense: Tense;
+	mood: MoodOptions;
+	tense: TenseOptions;
 	yo: string;
 	tu: string;
 	el: string;

@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { Question, Tense } from '@/lib/types';
+import { Question, Session } from '@/lib/types';
 import sql from '@/lib/db';
 
 type Data =
@@ -20,11 +20,11 @@ export default async function handler(
 	if (req.method !== 'POST') {
 		return res.status(405).json({ error: 'Method not allowed' });
 	}
-	const { sessionId } = req.body;
+	const { sessionId } = JSON.parse(req.body);
 	if (!sessionId) {
 		return res.status(400).json({ error: 'sessionId is required' });
 	}
-	const [dbSession] = await sql`
+	const [dbSession] = await sql<[Session]>`
 		SELECT * FROM sessions WHERE id = ${sessionId}
 	`;
 	if (!dbSession) {
@@ -41,10 +41,14 @@ export default async function handler(
 		`;
 		return res.status(200).json({ sessionCompleted: true });
 	}
-	const [dbQuestion] = await sql`
-		SELECT * FROM questions ORDER BY RANDOM() LIMIT 1
-		JOIN tenses ON questions.id = tenses.questionId
-		`;
+	// todo: check that the user has not seen the question
+	const [dbQuestion] =
+		await sql`SELECT q.id as questionId, q.englishname, q.spanishname,
+		t.id as tenseId, t.yo, t.tu, t.el, t.nosotros, t.vosotros, t.ellos, t.tense, t.mood, t.translation
+		FROM questions q
+		JOIN tenses t ON q.id = t.questionId
+		WHERE ARRAY['${sql.unsafe(dbSession.tenses.join("', '"))}'] @> ARRAY[t.tense]
+		ORDER BY RANDOM() LIMIT 1`;
 	if (!dbQuestion) {
 		return res.status(500).json({ error: 'Failed to get question' });
 	}
@@ -52,12 +56,20 @@ export default async function handler(
 		id: dbQuestion.id,
 		englishName: dbQuestion.englishName,
 		spanishName: dbQuestion.spanishName,
-		tenseData: {},
+		tenseData: {
+			[dbQuestion.tense]: {
+				id: dbQuestion.tenseId,
+				translation: dbQuestion.translation,
+				mood: dbQuestion.mood,
+				tense: dbQuestion.tense,
+				yo: dbQuestion.yo,
+				tu: dbQuestion.tu,
+				el: dbQuestion.el,
+				nosotros: dbQuestion.nosotros,
+				vosotros: dbQuestion.vosotros,
+				ellos: dbQuestion.ellos,
+			},
+		},
 	};
-	const randomTense =
-		dbSession.tenses[Math.floor(Math.random() * dbSession.tenses.length)];
-	question.tenseData[randomTense] = dbQuestion.tenses.find(
-		(tense: Tense) => tense.tense === randomTense
-	);
 	res.status(200).json({ question });
 }

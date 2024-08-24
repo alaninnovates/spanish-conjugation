@@ -1,4 +1,4 @@
-import { Tense } from '@/lib/types';
+import { Question, Tense } from '@/lib/types';
 import {
 	Box,
 	Button,
@@ -13,7 +13,8 @@ import {
 	Text,
 	VStack,
 } from '@chakra-ui/react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { tenses as tensesData } from '@/lib/types';
 
 const SessionStartInputs = ({
 	length,
@@ -51,12 +52,11 @@ const SessionStartInputs = ({
 						value={tenses}
 					>
 						<VStack spacing={4} align="start">
-							<Checkbox value="present">Present</Checkbox>
-							<Checkbox value="preterite">Preterite</Checkbox>
-							<Checkbox value="imperfect">Imperfect</Checkbox>
-							<Checkbox value="present-subjunctive">
-								Present Subjunctive
-							</Checkbox>
+							{tensesData.map((tense) => (
+								<Checkbox key={tense} value={tense}>
+									{tense}
+								</Checkbox>
+							))}
 						</VStack>
 					</CheckboxGroup>
 				</FormControl>
@@ -74,7 +74,7 @@ const SessionQuestion = ({
 	sessionStartTime,
 	onSessionEnd,
 }: {
-	sessionId: string;
+	sessionId: number;
 	sessionStartTime: number;
 	onSessionEnd: () => void;
 }) => {
@@ -120,6 +120,16 @@ const SessionQuestion = ({
 		console.log('RECV SUBMIT', data);
 		return data;
 	};
+	const [question, setQuestion] = useState<null | Question>(null);
+	useEffect(() => {
+		if (!sessionId) return;
+		getQuestion().then((data) => {
+			if (data) {
+				setQuestion(data.question);
+				console.log('SET QUESTION', data.question);
+			}
+		});
+	}, [sessionId]);
 	return <></>;
 };
 
@@ -137,7 +147,7 @@ export const Session = () => {
 	const [length, setLength] = useState<number>();
 	const [tenses, setTenses] = useState<string[]>([]);
 	const [sessionStartTime, setSessionStartTime] = useState<number>();
-	const [sessionId, setSessionId] = useState<string>();
+	const [sessionId, setSessionId] = useState<number>();
 	return (
 		<Box bg="blue.300" h="100%">
 			<Container

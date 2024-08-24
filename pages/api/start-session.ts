@@ -3,7 +3,7 @@ import sql from '@/lib/db';
 
 type Data =
 	| {
-			sessionId: string;
+			sessionId: number;
 	  }
 	| {
 			error: string;
@@ -13,16 +13,16 @@ export default async function handler(
 	req: NextApiRequest,
 	res: NextApiResponse<Data>
 ) {
-	const { length, tenses } = req.body;
+	const { length, tenses } = JSON.parse(req.body);
 	if (!length || !tenses) {
 		return res
 			.status(400)
 			.json({ error: 'length and tenses are required' });
 	}
-	const sessionId = Math.random().toString(36).substring(2, 8);
-	await sql`
-		INSERT INTO sessions (id, length, tenses)
-		VALUES (${sessionId}, ${length}, ${tenses})
+	const [session] = await sql<[{ id: number }]>`
+		INSERT INTO sessions (length, tenses)
+		VALUES (${length}, ${tenses})
+		RETURNING id
 	`;
-	res.status(200).json({ sessionId });
+	res.status(200).json({ sessionId: session.id });
 }
