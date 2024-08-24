@@ -57,6 +57,7 @@ export interface Tense {
 
 export interface Session {
 	id: number;
+	activeQuestionId: number;
 	startedAt: string;
 	endedAt: string;
 	length: number;
@@ -112,4 +113,6 @@ ALTER TABLE sessions ADD COLUMN tenses TEXT[];
 
 ALTER TABLE tenses ADD COLUMN mood TEXT;
 ALTER TABLE tenses ADD COLUMN translation TEXT;
+
+ALTER TABLE sessions ADD COLUMN activeQuestionId INTEGER REFERENCES questions(id);
 */

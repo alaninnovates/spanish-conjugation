@@ -10,8 +10,14 @@ import {
 	Heading,
 	Input,
 	Spacer,
+	Table,
+	Tbody,
+	Tr,
+	Td,
 	Text,
 	VStack,
+	TableContainer,
+	HStack,
 } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
 import { tenses as tensesData } from '@/lib/types';
@@ -102,24 +108,6 @@ const SessionQuestion = ({
 		console.log('RECV QUESTION', data);
 		return data;
 	};
-	const submitQuestion = async (
-		tenseData: Exclude<Exclude<Tense, 'id'>, 'tense'>
-	) => {
-		const res = await fetch('/api/submit-question', {
-			method: 'POST',
-			body: JSON.stringify({
-				sessionId,
-				tenseData,
-			}),
-		});
-		const data = await res.json();
-		if ('error' in data) {
-			console.error('ERROR', data.error);
-			return;
-		}
-		console.log('RECV SUBMIT', data);
-		return data;
-	};
 	const [question, setQuestion] = useState<null | Question>(null);
 	useEffect(() => {
 		if (!sessionId) return;
@@ -130,7 +118,132 @@ const SessionQuestion = ({
 			}
 		});
 	}, [sessionId]);
-	return <></>;
+	const [answers, setAnswers] = useState<Record<string, string>>({});
+	const submitQuestion = async () => {
+		const res = await fetch('/api/submit-question', {
+			method: 'POST',
+			body: JSON.stringify({
+				sessionId,
+				answers,
+			}),
+		});
+		const data = await res.json();
+		if ('error' in data) {
+			console.error('ERROR', data.error);
+			return;
+		}
+		console.log('RECV SUBMIT', data);
+		return data;
+	};
+	return (
+		<>
+			<Text color="gray.500">Verb</Text>
+			<Heading>
+				{question?.spanishName} - {question?.englishName}
+			</Heading>
+			<Text>
+				Conjugate the verb in the{' '}
+				{question?.tenseData[Object.keys(question?.tenseData)[0]].mood}{' '}
+				{question?.tenseData[Object.keys(question?.tenseData)[0]].tense}{' '}
+				tense
+			</Text>
+			<Spacer />
+			<TableContainer>
+				<Table variant="simple">
+					<Tbody>
+						<Tr>
+							<HStack spacing={4} w="100%" flexGrow={1}>
+								<HStack w="100%">
+									<Td>Yo</Td>
+									<Input
+										value={answers.yo}
+										onChange={(e) =>
+											setAnswers({
+												...answers,
+												yo: e.target.value,
+											})
+										}
+									/>
+								</HStack>
+								<HStack w="100%">
+									<Td>Nosotros</Td>
+									<Input
+										value={answers.nosotros}
+										onChange={(e) =>
+											setAnswers({
+												...answers,
+												nosotros: e.target.value,
+											})
+										}
+									/>
+								</HStack>
+							</HStack>
+						</Tr>
+						<Tr>
+							<HStack spacing={4} w="100%" flexGrow={1}>
+								<HStack w="100%">
+									<Td>Tú</Td>
+									<Input
+										value={answers.tu}
+										onChange={(e) =>
+											setAnswers({
+												...answers,
+												tu: e.target.value,
+											})
+										}
+									/>
+								</HStack>
+								<HStack w="100%">
+									<Td>Vosotros</Td>
+									<Input
+										value={answers.vosotros}
+										onChange={(e) =>
+											setAnswers({
+												...answers,
+												vosotros: e.target.value,
+											})
+										}
+									/>
+								</HStack>
+							</HStack>
+						</Tr>
+						<Tr>
+							<HStack spacing={4} w="100%" flexGrow={1}>
+								<HStack w="100%">
+									<Td>Él/Ella/Usted</Td>
+									<Input
+										value={answers.el}
+										onChange={(e) =>
+											setAnswers({
+												...answers,
+												el: e.target.value,
+											})
+										}
+									/>
+								</HStack>
+								<HStack w="100%">
+									<Td>Ellos/Ellas/Ustedes</Td>
+									<Input
+										value={answers.ellos}
+										onChange={(e) =>
+											setAnswers({
+												...answers,
+												ellos: e.target.value,
+											})
+										}
+									/>
+								</HStack>
+							</HStack>
+						</Tr>
+					</Tbody>
+				</Table>
+			</TableContainer>
+			<Spacer />
+			<Button colorScheme="blue" size="lg" onClick={submitQuestion}>
+				Submit
+			</Button>
+		</>
+	);
 };
 
 const SessionEnd = () => {

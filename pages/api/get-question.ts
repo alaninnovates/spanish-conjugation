@@ -24,7 +24,7 @@ export default async function handler(
 	if (!sessionId) {
 		return res.status(400).json({ error: 'sessionId is required' });
 	}
-	const [dbSession] = await sql<[Session]>`
+	const [dbSession] = await sql`
 		SELECT * FROM sessions WHERE id = ${sessionId}
 	`;
 	if (!dbSession) {
@@ -52,10 +52,15 @@ export default async function handler(
 	if (!dbQuestion) {
 		return res.status(500).json({ error: 'Failed to get question' });
 	}
+	await sql`
+		UPDATE sessions
+		SET activequestionid = ${dbQuestion.questionid}
+		WHERE id = ${sessionId}
+	`;
 	const question: Question = {
-		id: dbQuestion.id,
-		englishName: dbQuestion.englishName,
-		spanishName: dbQuestion.spanishName,
+		id: dbQuestion.questionId,
+		englishName: dbQuestion.englishname,
+		spanishName: dbQuestion.spanishname,
 		tenseData: {
 			[dbQuestion.tense]: {
 				id: dbQuestion.tenseId,
