@@ -82,7 +82,7 @@ const SessionQuestion = ({
 }: {
 	sessionId: number;
 	sessionStartTime: number;
-	onSessionEnd: () => void;
+	onSessionEnd: (forceEnd?: boolean) => Promise<void>;
 }) => {
 	// role: get a random question from the backend (/api/get-question)
 	// when the user submits an answer:
@@ -102,7 +102,7 @@ const SessionQuestion = ({
 			return;
 		}
 		if ('sessionCompleted' in data) {
-			onSessionEnd();
+			await onSessionEnd();
 			return;
 		}
 		console.log('RECV QUESTION', data);
@@ -150,11 +150,23 @@ const SessionQuestion = ({
 			{}
 		);
 		setIncorrectFields(incorrectFields);
-		if (data.incorrectFields.length === 0) changeQuestion();
+		if (data.incorrectFields.length === 0) {
+			changeQuestion();
+			setAnswers({});
+		}
 	};
 	return (
 		<>
-			<Text color="gray.500">Verb</Text>
+			<HStack w="100%" justifyContent="space-between">
+				<Text color="gray.500">Verb</Text>
+				<Button
+					colorScheme="red"
+					variant="outline"
+					onClick={() => onSessionEnd(true)}
+				>
+					End Session
+				</Button>
+			</HStack>
 			<Heading>
 				{question?.spanishName} - {question?.englishName}
 			</Heading>
@@ -328,7 +340,15 @@ export const Session = () => {
 						<SessionQuestion
 							sessionId={sessionId!}
 							sessionStartTime={sessionStartTime!}
-							onSessionEnd={() => {
+							onSessionEnd={async (forceEnd) => {
+								if (forceEnd) {
+									await fetch('/api/end-session', {
+										method: 'POST',
+										body: JSON.stringify({
+											sessionId,
+										}),
+									});
+								}
 								setCurrScreen('end');
 							}}
 						/>
