@@ -139,7 +139,17 @@ const SessionQuestion = ({
 			return;
 		}
 		console.log('RECV SUBMIT', data);
-		setIncorrectFields(data.incorrectFields);
+		const incorrectFields = data.incorrectFields.reduce(
+			(
+				acc: Record<string, string>,
+				{ field, correctValue }: { field: string; correctValue: string }
+			) => {
+				acc[field] = correctValue;
+				return acc;
+			},
+			{}
+		);
+		setIncorrectFields(incorrectFields);
 		if (data.incorrectFields.length === 0) changeQuestion();
 	};
 	return (
@@ -167,7 +177,9 @@ const SessionQuestion = ({
 									yo: e.target.value,
 								})
 							}
-							borderColor={incorrectFields!['yo'] ?? 'red.500'}
+							borderColor={
+								incorrectFields!['yo'] ? 'red.500' : ''
+							}
 						/>
 					</HStack>
 					<HStack w="100%">
@@ -180,7 +192,9 @@ const SessionQuestion = ({
 									tu: e.target.value,
 								})
 							}
-							borderColor={incorrectFields!['tu'] ?? 'red.500'}
+							borderColor={
+								incorrectFields!['tu'] ? 'red.500' : ''
+							}
 						/>
 					</HStack>
 					<HStack w="100%">
@@ -193,7 +207,9 @@ const SessionQuestion = ({
 									el: e.target.value,
 								})
 							}
-							borderColor={incorrectFields!['el'] ?? 'red.500'}
+							borderColor={
+								incorrectFields!['el'] ? 'red.500' : ''
+							}
 						/>
 					</HStack>
 				</VStack>
@@ -209,7 +225,7 @@ const SessionQuestion = ({
 								})
 							}
 							borderColor={
-								incorrectFields!['nosotros'] ?? 'red.500'
+								incorrectFields!['nosotros'] ? 'red.500' : ''
 							}
 						/>
 					</HStack>
@@ -224,7 +240,7 @@ const SessionQuestion = ({
 								})
 							}
 							borderColor={
-								incorrectFields!['vosotros'] ?? 'red.500'
+								incorrectFields!['vosotros'] ? 'red.500' : ''
 							}
 						/>
 					</HStack>
@@ -238,7 +254,9 @@ const SessionQuestion = ({
 									ellos: e.target.value,
 								})
 							}
-							borderColor={incorrectFields!['ellos'] ?? 'red.500'}
+							borderColor={
+								incorrectFields!['ellos'] ? 'red.500' : ''
+							}
 						/>
 					</HStack>
 				</VStack>
