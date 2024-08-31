@@ -39,6 +39,10 @@ export default async function handler(
 			SET endedAt = CURRENT_TIMESTAMP
 			WHERE id = ${sessionId}
 		`;
+		await sql`
+			INSERT INTO sessionLogs (sessionId, type)
+			VALUES (${sessionId}, 'sessionEnd')
+		`;
 		return res.status(200).json({ sessionCompleted: true });
 	}
 	// todo: check that the user has not seen the question

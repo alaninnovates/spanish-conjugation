@@ -24,5 +24,8 @@ export default async function handler(
 		VALUES (${length}, ${tenses})
 		RETURNING id
 	`;
+	await sql`
+		INSERT INTO sessionLogs (sessionId, type)
+		VALUES (${session.id}, 'sessionStart')`;
 	res.status(200).json({ sessionId: session.id });
 }

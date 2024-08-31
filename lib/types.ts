@@ -64,14 +64,21 @@ export interface Session {
 	tenses: string[];
 }
 
+type SessionLogType =
+	| 'sessionStart'
+	| 'questionSubmit'
+	| 'sessionEnd'
+	| 'sessionEndEarly';
+
 export interface SessionLog {
 	id: number;
 	sessionId: string;
-	questionId: number;
-	timeSpent: number;
-	incorrectData: {
+	type: SessionLogType;
+	questionId?: number;
+	incorrectData?: {
 		[key: string]: string;
 	};
+	createdAt: Date;
 }
 
 /*
@@ -118,4 +125,6 @@ ALTER TABLE sessions ADD COLUMN activeQuestionId INTEGER REFERENCES questions(id
 
 ALTER TABLE sessionLogs DROP COLUMN timeSpent;
 ALTER TABLE sessionLogs ADD COLUMN createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP;
+
+ALTER TABLE sessionLogs ADD COLUMN type TEXT;
 */

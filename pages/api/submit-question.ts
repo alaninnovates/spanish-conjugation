@@ -73,8 +73,8 @@ export default async function handler(
 	console.log(incorrectFields, dbQuestion);
 
 	await sql`
-	INSERT INTO sessionlogs (sessionId, questionId, incorrectData)
-	VALUES (${sessionId}, ${dbQuestion.questionid}, ${incorrectFields})`;
+	INSERT INTO sessionlogs (sessionId, questionId, incorrectData, type)
+	VALUES (${sessionId}, ${dbQuestion.questionid}, ${incorrectFields}, 'questionSubmit')`;
 	console.log(incorrectFields);
 	res.status(200).json({
 		incorrectFields,
