@@ -109,16 +109,22 @@ const SessionQuestion = ({
 		return data;
 	};
 	const [question, setQuestion] = useState<null | Question>(null);
-	useEffect(() => {
-		if (!sessionId) return;
+	const changeQuestion = () => {
 		getQuestion().then((data) => {
 			if (data) {
 				setQuestion(data.question);
 				console.log('SET QUESTION', data.question);
 			}
 		});
+	};
+	useEffect(() => {
+		if (!sessionId) return;
+		changeQuestion();
 	}, [sessionId]);
 	const [answers, setAnswers] = useState<Record<string, string>>({});
+	const [incorrectFields, setIncorrectFields] = useState<
+		Record<string, string>
+	>({});
 	const submitQuestion = async () => {
 		const res = await fetch('/api/submit-question', {
 			method: 'POST',
@@ -133,7 +139,8 @@ const SessionQuestion = ({
 			return;
 		}
 		console.log('RECV SUBMIT', data);
-		return data;
+		setIncorrectFields(data.incorrectFields);
+		if (data.incorrectFields.length === 0) changeQuestion();
 	};
 	return (
 		<>
@@ -148,96 +155,94 @@ const SessionQuestion = ({
 				tense
 			</Text>
 			<Spacer />
-			<TableContainer>
-				<Table variant="simple">
-					<Tbody>
-						<Tr>
-							<HStack spacing={4} w="100%" flexGrow={1}>
-								<HStack w="100%">
-									<Td>Yo</Td>
-									<Input
-										value={answers.yo}
-										onChange={(e) =>
-											setAnswers({
-												...answers,
-												yo: e.target.value,
-											})
-										}
-									/>
-								</HStack>
-								<HStack w="100%">
-									<Td>Nosotros</Td>
-									<Input
-										value={answers.nosotros}
-										onChange={(e) =>
-											setAnswers({
-												...answers,
-												nosotros: e.target.value,
-											})
-										}
-									/>
-								</HStack>
-							</HStack>
-						</Tr>
-						<Tr>
-							<HStack spacing={4} w="100%" flexGrow={1}>
-								<HStack w="100%">
-									<Td>Tú</Td>
-									<Input
-										value={answers.tu}
-										onChange={(e) =>
-											setAnswers({
-												...answers,
-												tu: e.target.value,
-											})
-										}
-									/>
-								</HStack>
-								<HStack w="100%">
-									<Td>Vosotros</Td>
-									<Input
-										value={answers.vosotros}
-										onChange={(e) =>
-											setAnswers({
-												...answers,
-												vosotros: e.target.value,
-											})
-										}
-									/>
-								</HStack>
-							</HStack>
-						</Tr>
-						<Tr>
-							<HStack spacing={4} w="100%" flexGrow={1}>
-								<HStack w="100%">
-									<Td>Él/Ella/Usted</Td>
-									<Input
-										value={answers.el}
-										onChange={(e) =>
-											setAnswers({
-												...answers,
-												el: e.target.value,
-											})
-										}
-									/>
-								</HStack>
-								<HStack w="100%">
-									<Td>Ellos/Ellas/Ustedes</Td>
-									<Input
-										value={answers.ellos}
-										onChange={(e) =>
-											setAnswers({
-												...answers,
-												ellos: e.target.value,
-											})
-										}
-									/>
-								</HStack>
-							</HStack>
-						</Tr>
-					</Tbody>
-				</Table>
-			</TableContainer>
+			<HStack spacing={4} w="100%" flexGrow={1}>
+				<VStack w="100%">
+					<HStack w="100%">
+						<Text>Yo</Text>
+						<Input
+							value={answers.yo}
+							onChange={(e) =>
+								setAnswers({
+									...answers,
+									yo: e.target.value,
+								})
+							}
+							borderColor={incorrectFields!['yo'] ?? 'red.500'}
+						/>
+					</HStack>
+					<HStack w="100%">
+						<Text>Tú</Text>
+						<Input
+							value={answers.tu}
+							onChange={(e) =>
+								setAnswers({
+									...answers,
+									tu: e.target.value,
+								})
+							}
+							borderColor={incorrectFields!['tu'] ?? 'red.500'}
+						/>
+					</HStack>
+					<HStack w="100%">
+						<Text>Él/Ella/Usted</Text>
+						<Input
+							value={answers.el}
+							onChange={(e) =>
+								setAnswers({
+									...answers,
+									el: e.target.value,
+								})
+							}
+							borderColor={incorrectFields!['el'] ?? 'red.500'}
+						/>
+					</HStack>
+				</VStack>
+				<VStack w="100%">
+					<HStack w="100%">
+						<Text>Nosotros</Text>
+						<Input
+							value={answers.nosotros}
+							onChange={(e) =>
+								setAnswers({
+									...answers,
+									nosotros: e.target.value,
+								})
+							}
+							borderColor={
+								incorrectFields!['nosotros'] ?? 'red.500'
+							}
+						/>
+					</HStack>
+					<HStack w="100%">
+						<Text>Vosotros</Text>
+						<Input
+							value={answers.vosotros}
+							onChange={(e) =>
+								setAnswers({
+									...answers,
+									vosotros: e.target.value,
+								})
+							}
+							borderColor={
+								incorrectFields!['vosotros'] ?? 'red.500'
+							}
+						/>
+					</HStack>
+					<HStack w="100%">
+						<Text>Ellos/Ellas/Ustedes</Text>
+						<Input
+							value={answers.ellos}
+							onChange={(e) =>
+								setAnswers({
+									...answers,
+									ellos: e.target.value,
+								})
+							}
+							borderColor={incorrectFields!['ellos'] ?? 'red.500'}
+						/>
+					</HStack>
+				</VStack>
+			</HStack>
 			<Spacer />
 			<Button colorScheme="blue" size="lg" onClick={submitQuestion}>
 				Submit
