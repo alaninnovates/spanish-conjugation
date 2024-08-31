@@ -1,4 +1,4 @@
-import { Question, Tense } from '@/lib/types';
+import { Question } from '@/lib/types';
 import {
 	Box,
 	Button,
@@ -10,13 +10,8 @@ import {
 	Heading,
 	Input,
 	Spacer,
-	Table,
-	Tbody,
-	Tr,
-	Td,
 	Text,
 	VStack,
-	TableContainer,
 	HStack,
 } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
@@ -72,6 +67,27 @@ const SessionStartInputs = ({
 				Go!
 			</Button>
 		</>
+	);
+};
+
+const TimeElapsed = ({ startTime }: { startTime: number }) => {
+	const [time, setTime] = useState(Date.now());
+	// rerender every second
+	useEffect(() => {
+		const interval = setInterval(() => {
+			setTime(Date.now());
+		}, 1000);
+		return () => clearInterval(interval);
+	}, []);
+	return (
+		<Text>
+			Time Elapsed:{' '}
+			{String(Math.floor((time - startTime) / 60000)).padStart(2, '0')}:
+			{String(Math.floor((time - startTime) / 1000) % 60).padStart(
+				2,
+				'0'
+			)}
+		</Text>
 	);
 };
 
@@ -159,13 +175,16 @@ const SessionQuestion = ({
 		<>
 			<HStack w="100%" justifyContent="space-between">
 				<Text color="gray.500">Verb</Text>
-				<Button
-					colorScheme="red"
-					variant="outline"
-					onClick={() => onSessionEnd(true)}
-				>
-					End Session
-				</Button>
+				<VStack>
+					<TimeElapsed startTime={sessionStartTime} />
+					<Button
+						colorScheme="red"
+						variant="outline"
+						onClick={() => onSessionEnd(true)}
+					>
+						End Session
+					</Button>
+				</VStack>
 			</HStack>
 			<Heading>
 				{question?.spanishName} - {question?.englishName}
