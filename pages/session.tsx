@@ -1,4 +1,4 @@
-import { Question } from '@/lib/types';
+import { Question, SessionLog } from '@/lib/types';
 import {
 	Box,
 	Button,
@@ -300,11 +300,58 @@ const SessionQuestion = ({
 	);
 };
 
-const SessionEnd = () => {
+const SessionEnd = ({ sessionId }: { sessionId: number }) => {
+	const [sessionData, setSessionData] = useState<Session>();
+	const [sessionLogs, setSessionLogs] = useState<SessionLog[]>();
+
+	useEffect(() => {
+		const fetchSession = async () => {
+			const res = await fetch('/api/get-session', {
+				method: 'POST',
+				body: JSON.stringify({
+					sessionId,
+				}),
+			});
+			const data = await res.json();
+			console.log('RECV SESSION DATA', data);
+			setSessionData(data.sessionData);
+			setSessionLogs(data.sessionLogs);
+		};
+		fetchSession();
+	}, []);
 	return (
 		<>
 			<Heading>Session Ended</Heading>
 			<Text>Good job!</Text>
+			{/* timeline */}
+			<VStack w="100%" spacing={4}>
+				{sessionLogs?.map((log) => (
+					<Box key={log.id} w="100%" p={4} bg="gray.200">
+						<Text>{log.type}</Text>
+						{log.type === 'questionSubmit' &&
+							log.incorrectData.length > 0 && (
+								<>
+									<Text color="red.500">Incorrect</Text>
+									{log.incorrectData.map(
+										({
+											field,
+											correctValue,
+										}: {
+											field: string;
+											correctValue: string;
+										}) => {
+											return (
+												<Text>
+													{field}: {correctValue}
+												</Text>
+											);
+										}
+									)}
+								</>
+							)}
+					</Box>
+				))}
+			</VStack>
 		</>
 	);
 };
@@ -372,7 +419,7 @@ export const Session = () => {
 							}}
 						/>
 					) : currScreen === 'end' ? (
-						<SessionEnd />
+						<SessionEnd sessionId={sessionId!} />
 					) : (
 						<></>
 					)}
